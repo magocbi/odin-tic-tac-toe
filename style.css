@@ -1,0 +1,18 @@
+:root {
+  --clr-primary: 201 100 14;
+  --clr-accent: 0 69 50;
+
+  --clr-board: 51 55 82;
+  --clr-player-one: 40 97 64;
+  --clr-player-two: 31 100 48;
+}
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
