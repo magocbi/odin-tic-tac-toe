@@ -37,7 +37,7 @@ header {
 /* Layout */
 
 .container {
-  width: min(90%, 1200px);
+  width: min(90%, 800px);
   margin: 0 auto;
 }
 
@@ -45,16 +45,21 @@ header {
   margin: 1em 0;
   display: grid;
   gap: 1rem;
-  grid-template-columns: 1fr, 1fr;
+  grid-template-columns: 1fr 1fr;
   grid-template-rows: auto;
   grid-template-areas:
     'player1 player2'
+    'game-controls game-controls'
     'gameboard gameboard'
-    'controls controls';
+    'computer-controls computer-controls';
 }
 
 .game > * {
-  border: 2px solid hsl(var(--clr-board));
+  /* border: 2px solid hsl(var(--clr-board)); */
+}
+
+.game-controls {
+  grid-area: game-controls;
 }
 
 .player1-meta {
@@ -70,10 +75,86 @@ header {
 }
 
 .computer-controls {
-  grid-area: controls;
+  grid-area: computer-controls;
 }
 
-/* Styling gameboard */
+/* Players */
+
+.player1-meta input,
+.player2-meta input {
+  width: 100%;
+  font-size: 1.3rem;
+  padding: 0.25em 0.5em;
+  background: transparent;
+  border: 0;
+
+  text-align: center;
+}
+
+.player1-meta input {
+  color: hsl(var(--clr-player-one));
+}
+.player2-meta input {
+  color: hsl(var(--clr-player-two));
+}
+
+.player1-meta input:focus {
+  color: #000;
+  background-color: hsl(var(--clr-player-one));
+}
+
+.player2-meta input:focus {
+  color: #000;
+  background-color: hsl(var(--clr-player-two));
+}
+
+/* Game Controls */
+
+.game-controls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.restart-btn {
+  font-size: 1.3rem;
+  letter-spacing: 0.1em;
+  color: #fff;
+  background-color: red;
+  border: 0;
+  border-radius: 5px;
+  padding: 0.25em 0.75em;
+  margin: 0 auto;
+}
+
+.player-btns {
+  margin: 0 auto;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.player-btns button {
+  font-size: 1.2rem;
+  padding: 0.25em 0.75em;
+  border: 0;
+}
+
+.player-btn {
+  border-radius: 2px 0 0 2px;
+}
+
+.computer-btn {
+  border-radius: 0 2px 2px 0;
+}
+
+.player-btns .selected {
+  color: hsl(var(--clr-board));
+  background-color: hsl(var(--clr-player-two));
+  border: 1px solid hsl(var(--clr-player-one));
+}
+
+/* gameboard */
 
 .gameboard-container {
   width: 100%;
