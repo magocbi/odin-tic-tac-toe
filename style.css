@@ -21,6 +21,7 @@ body {
 /* Header */
 
 header {
+  width: 100%;
   display: flex;
   justify-content: center;
   background: hsl(var(--clr-accent));
@@ -28,7 +29,58 @@ header {
 }
 
 .game-title {
-  font-size: 2rem;
+  font-size: clamp(1rem, calc(2vw + 1rem), 2rem);
+  letter-spacing: 0.3em;
   color: hsl(var(--clr-board));
-  letter-spacing: 2rem;
+}
+
+/* Layout */
+
+.container {
+  width: min(90%, 1200px);
+  margin: 0 auto;
+}
+
+.game {
+  margin: 1em 0;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr, 1fr;
+  grid-template-rows: auto;
+  grid-template-areas:
+    'player1 player2'
+    'gameboard gameboard'
+    'controls controls';
+}
+
+.game > * {
+  border: 2px solid hsl(var(--clr-board));
+}
+
+.player1-meta {
+  grid-area: player1;
+}
+
+.player2-meta {
+  grid-area: player2;
+}
+
+.gameboard-container {
+  grid-area: gameboard;
+}
+
+.computer-controls {
+  grid-area: controls;
+}
+
+/* Styling gameboard */
+
+.gameboard-container {
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.gameboard-container canvas {
+  display: block;
+  width: 100%;
 }
