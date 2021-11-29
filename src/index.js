@@ -8,7 +8,11 @@ const GameBoard = (function gameBoard() {
     board = new Array(9).fill(null);
   }
 
-  return { getBoardState, resetBoard };
+  function playMove(index, symbol) {
+    board[index] = symbol;
+  }
+
+  return { getBoardState, resetBoard, playMove };
 })();
 
 const displayController = (function displayController() {
@@ -116,13 +120,56 @@ const displayController = (function displayController() {
     }
   }
 
-  return { resetCanvas, drawBoard };
+  function getCanvas() {
+    return canvas;
+  }
+
+  return { resetCanvas, drawBoard, getCanvas };
 })(document);
 
-const gameController = (function gameController(
-  GameBoard,
-  displayController
-) {})(GameBoard, displayController);
+const gameController = (function gameController(gameBoard, display) {
+  function getBoardCellIndex(clickPosition) {
+    const { x: clickX, y: clickY } = clickPosition;
+    const cellSize = display.getCanvas().width / 3;
+    let index = 0;
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        const startX = j * cellSize;
+        const startY = i * cellSize;
+        const endX = j * cellSize + cellSize;
+        const endY = i * cellSize + cellSize;
 
-displayController.resetCanvas();
-displayController.drawBoard(GameBoard.getBoardState());
+        if (
+          clickX >= startX &&
+          clickY >= startY &&
+          clickX <= endX &&
+          clickY <= endY
+        ) {
+          index = i * 3 + j;
+          break;
+        }
+      }
+    }
+    return index;
+  }
+
+  function handleBoardClick(e) {
+    const clickPosition = {
+      x: e.offsetX,
+      y: e.offsetY,
+    };
+    const cellIndex = getBoardCellIndex(clickPosition);
+    gameBoard.playMove(cellIndex, 'x');
+    display.drawBoard(gameBoard.getBoardState());
+  }
+
+  function setUpGame() {
+    display.getCanvas().addEventListener('click', handleBoardClick);
+    display.resetCanvas();
+    display.drawBoard(gameBoard.getBoardState());
+  }
+
+  return { setUpGame };
+})(GameBoard, displayController);
+
+gameController.setUpGame();
