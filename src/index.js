@@ -1,3 +1,15 @@
+function Player(name, symbol) {
+  function getName() {
+    return name;
+  }
+
+  function getSymbol() {
+    return symbol;
+  }
+
+  return { getName, getSymbol };
+}
+
 const GameBoard = (function gameBoard() {
   let board = new Array(9).fill(null);
   function getBoardState() {
@@ -127,7 +139,11 @@ const displayController = (function displayController() {
   return { resetCanvas, drawBoard, getCanvas };
 })(document);
 
-const gameController = (function gameController(gameBoard, display) {
+const gameController = (function gameController(gameBoard, display, Player) {
+  let playerOne;
+  let playerTwo;
+  let playerOneTurn = true;
+
   function getBoardCellIndex(clickPosition) {
     const { x: clickX, y: clickY } = clickPosition;
     const cellSize = display.getCanvas().width / 3;
@@ -159,7 +175,13 @@ const gameController = (function gameController(gameBoard, display) {
       y: e.offsetY,
     };
     const cellIndex = getBoardCellIndex(clickPosition);
-    gameBoard.playMove(cellIndex, 'x');
+    if (playerOneTurn) {
+      gameBoard.playMove(cellIndex, playerOne.getSymbol());
+      playerOneTurn = false;
+    } else {
+      gameBoard.playMove(cellIndex, playerTwo.getSymbol());
+      playerOneTurn = true;
+    }
     display.drawBoard(gameBoard.getBoardState());
   }
 
@@ -167,9 +189,12 @@ const gameController = (function gameController(gameBoard, display) {
     display.getCanvas().addEventListener('click', handleBoardClick);
     display.resetCanvas();
     display.drawBoard(gameBoard.getBoardState());
+
+    playerOne = Player('Player 1', 'x');
+    playerTwo = Player('Player 2', 'o');
   }
 
   return { setUpGame };
-})(GameBoard, displayController);
+})(GameBoard, displayController, Player);
 
 gameController.setUpGame();
