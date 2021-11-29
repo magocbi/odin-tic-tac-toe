@@ -149,7 +149,6 @@ header {
 }
 
 .player-btns .selected {
-  color: hsl(var(--clr-board));
   background-color: hsl(var(--clr-player-two));
   border: 1px solid hsl(var(--clr-player-one));
 }
