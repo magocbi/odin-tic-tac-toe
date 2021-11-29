@@ -34,7 +34,18 @@ const GameBoard = (function gameBoard() {
     );
   }
 
-  return { getBoardState, resetBoard, playMove, getWinIndex, gameTie };
+  function positionOccupied(index) {
+    return board[index];
+  }
+
+  return {
+    getBoardState,
+    resetBoard,
+    playMove,
+    getWinIndex,
+    gameTie,
+    positionOccupied,
+  };
 })();
 
 const displayController = (function displayController() {
@@ -199,6 +210,7 @@ const gameController = (function gameController(gameBoard, display, Player) {
       y: e.offsetY,
     };
     const cellIndex = getBoardCellIndex(clickPosition);
+    if (gameBoard.positionOccupied(cellIndex)) return;
     let winCombinations = [];
     if (playerOneTurn) {
       gameBoard.playMove(cellIndex, playerOne.getSymbol());
