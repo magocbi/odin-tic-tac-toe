@@ -58,7 +58,6 @@ const displayController = (function displayController() {
   const BOARD_LINES_COLOR = '#000000';
 
   function drawX(startPosition, distance, size) {
-    console.log(startPosition);
     const offset = size * distance;
     ctx.beginPath();
     ctx.moveTo(startPosition.x + offset, startPosition.y + offset);
@@ -167,6 +166,7 @@ const gameController = (function gameController(gameBoard, display, Player) {
   let gameOver = false;
   const playerOneInput = document.getElementById('player-one');
   const playerTwoInput = document.getElementById('player-two');
+  const restartBtn = document.getElementById('restart-btn');
   const winConditions = [
     [0, 1, 2],
     [4, 5, 6],
@@ -232,11 +232,12 @@ const gameController = (function gameController(gameBoard, display, Player) {
     if (winCombinations.length || gameBoard.gameTie()) {
       gameOver = true;
     }
-    console.log(winCombinations);
     display.drawBoard(gameBoard.getBoardState());
   }
 
   function setUpNewGame() {
+    console.log('Setting up new game');
+    gameBoard.resetBoard();
     display.resetCanvas();
     display.drawBoard(gameBoard.getBoardState());
 
@@ -249,6 +250,7 @@ const gameController = (function gameController(gameBoard, display, Player) {
   function setUpListeners() {
     display.getCanvas().removeEventListener('click', handleBoardClick);
     display.getCanvas().addEventListener('click', handleBoardClick);
+    restartBtn.onclick = setUpNewGame;
   }
 
   return { setUpNewGame, setUpListeners };
