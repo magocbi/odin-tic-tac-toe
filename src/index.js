@@ -24,7 +24,17 @@ const GameBoard = (function gameBoard() {
     board[index] = symbol;
   }
 
-  return { getBoardState, resetBoard, playMove };
+  function gameTie() {
+    return board.every((symbol) => symbol !== null);
+  }
+
+  function getWinIndex(winConditions, symbol) {
+    return winConditions.filter((combination) =>
+      combination.every((index) => board[index] === symbol)
+    );
+  }
+
+  return { getBoardState, resetBoard, playMove, getWinIndex, gameTie };
 })();
 
 const displayController = (function displayController() {
@@ -143,6 +153,19 @@ const gameController = (function gameController(gameBoard, display, Player) {
   let playerOne;
   let playerTwo;
   let playerOneTurn = true;
+  let gameOver = false;
+  const winConditions = [
+    [0, 1, 2],
+    [4, 5, 6],
+    [7, 8, 9],
+
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
 
   function getBoardCellIndex(clickPosition) {
     const { x: clickX, y: clickY } = clickPosition;
@@ -170,18 +193,32 @@ const gameController = (function gameController(gameBoard, display, Player) {
   }
 
   function handleBoardClick(e) {
+    if (gameOver) return;
     const clickPosition = {
       x: e.offsetX,
       y: e.offsetY,
     };
     const cellIndex = getBoardCellIndex(clickPosition);
+    let winCombinations = [];
     if (playerOneTurn) {
       gameBoard.playMove(cellIndex, playerOne.getSymbol());
       playerOneTurn = false;
+      winCombinations = gameBoard.getWinIndex(
+        winConditions,
+        playerOne.getSymbol()
+      );
     } else {
       gameBoard.playMove(cellIndex, playerTwo.getSymbol());
       playerOneTurn = true;
+      winCombinations = gameBoard.getWinIndex(
+        winConditions,
+        playerTwo.getSymbol()
+      );
     }
+    if (winCombinations.length || gameBoard.gameTie()) {
+      gameOver = true;
+    }
+    console.log(winCombinations);
     display.drawBoard(gameBoard.getBoardState());
   }
 
