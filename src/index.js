@@ -167,10 +167,11 @@ const gameController = (function gameController(gameBoard, display, Player) {
   const playerOneInput = document.getElementById('player-one');
   const playerTwoInput = document.getElementById('player-two');
   const restartBtn = document.getElementById('restart-btn');
+  const gameInfo = document.querySelector('.info-display h2');
   const winConditions = [
     [0, 1, 2],
-    [4, 5, 6],
-    [7, 8, 9],
+    [3, 4, 5],
+    [6, 7, 8],
 
     [0, 3, 6],
     [1, 4, 7],
@@ -216,22 +217,34 @@ const gameController = (function gameController(gameBoard, display, Player) {
     let winCombinations = [];
     if (playerOneTurn) {
       gameBoard.playMove(cellIndex, playerOne.getSymbol());
-      playerOneTurn = false;
       winCombinations = gameBoard.getWinIndex(
         winConditions,
         playerOne.getSymbol()
       );
+      gameInfo.textContent = `${playerTwo.getName()} Turn`;
     } else {
       gameBoard.playMove(cellIndex, playerTwo.getSymbol());
-      playerOneTurn = true;
       winCombinations = gameBoard.getWinIndex(
         winConditions,
         playerTwo.getSymbol()
       );
+      gameInfo.textContent = `${playerOne.getName()} Turn`;
     }
     if (winCombinations.length || gameBoard.gameTie()) {
       gameOver = true;
+      if (winCombinations.length) {
+        gameInfo.textContent = `${
+          playerOneTurn
+            ? `${playerOne.getName()} has won!`
+            : `${playerTwo.getName()} has won!`
+        }`;
+      } else {
+        gameInfo.textContent = 'Game is tied!';
+      }
     }
+
+    playerOneTurn = !playerOneTurn;
+
     display.drawBoard(gameBoard.getBoardState());
   }
 
@@ -245,6 +258,9 @@ const gameController = (function gameController(gameBoard, display, Player) {
     const playerTwoName = playerTwoInput.value || 'Player 2';
     playerOne = Player(playerOneName, 'x');
     playerTwo = Player(playerTwoName, 'o');
+    playerOneTurn = true;
+    gameOver = false;
+    gameInfo.textContent = `${playerOne.getName()} Turn`;
   }
 
   function setUpListeners() {
