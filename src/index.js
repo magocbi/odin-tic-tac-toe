@@ -234,7 +234,7 @@ const gameController = (function gameController(gameBoard, display, Player) {
     display.drawBoard(gameBoard.getBoardState());
   }
 
-  function setUpGame() {
+  function setUpNewGame() {
     display.getCanvas().addEventListener('click', handleBoardClick);
     display.resetCanvas();
     display.drawBoard(gameBoard.getBoardState());
@@ -243,7 +243,7 @@ const gameController = (function gameController(gameBoard, display, Player) {
     playerTwo = Player('Player 2', 'o');
   }
 
-  return { setUpGame };
+  return { setUpNewGame };
 })(GameBoard, displayController, Player);
 
-gameController.setUpGame();
+gameController.setUpNewGame();
