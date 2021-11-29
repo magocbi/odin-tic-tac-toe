@@ -156,7 +156,15 @@ const displayController = (function displayController() {
     return canvas;
   }
 
-  return { resetCanvas, drawBoard, getCanvas };
+  function setUpCanvas() {
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    ctx.fillStyle = BOARD_COLOR;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawBoardLines();
+  }
+
+  return { resetCanvas, drawBoard, getCanvas, setUpCanvas };
 })(document);
 
 const gameController = (function gameController(gameBoard, display, Player) {
@@ -263,9 +271,16 @@ const gameController = (function gameController(gameBoard, display, Player) {
     gameInfo.textContent = `${playerOne.getName()} Turn`;
   }
 
+  function resizeCanvas() {
+    display.setUpCanvas();
+    display.drawBoard(gameBoard.getBoardState());
+  }
+
   function setUpListeners() {
     display.getCanvas().removeEventListener('click', handleBoardClick);
     display.getCanvas().addEventListener('click', handleBoardClick);
+    window.removeEventListener('resize', resizeCanvas);
+    window.addEventListener('resize', resizeCanvas);
     restartBtn.onclick = setUpNewGame;
   }
 
