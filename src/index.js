@@ -165,6 +165,8 @@ const gameController = (function gameController(gameBoard, display, Player) {
   let playerTwo;
   let playerOneTurn = true;
   let gameOver = false;
+  const playerOneInput = document.getElementById('player-one');
+  const playerTwoInput = document.getElementById('player-two');
   const winConditions = [
     [0, 1, 2],
     [4, 5, 6],
@@ -235,15 +237,22 @@ const gameController = (function gameController(gameBoard, display, Player) {
   }
 
   function setUpNewGame() {
-    display.getCanvas().addEventListener('click', handleBoardClick);
     display.resetCanvas();
     display.drawBoard(gameBoard.getBoardState());
 
-    playerOne = Player('Player 1', 'x');
-    playerTwo = Player('Player 2', 'o');
+    const playerOneName = playerOneInput.value || 'Player 1';
+    const playerTwoName = playerTwoInput.value || 'Player 2';
+    playerOne = Player(playerOneName, 'x');
+    playerTwo = Player(playerTwoName, 'o');
   }
 
-  return { setUpNewGame };
+  function setUpListeners() {
+    display.getCanvas().removeEventListener('click', handleBoardClick);
+    display.getCanvas().addEventListener('click', handleBoardClick);
+  }
+
+  return { setUpNewGame, setUpListeners };
 })(GameBoard, displayController, Player);
 
+gameController.setUpListeners();
 gameController.setUpNewGame();
