@@ -166,6 +166,30 @@ const boardDisplay = (function boardDisplay() {
     return canvas;
   }
 
+  function getBoardCellIndex({ x: clickX, y: clickY }) {
+    const cellSize = canvas.width / 3;
+    let index = 0;
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        const startX = j * cellSize;
+        const startY = i * cellSize;
+        const endX = j * cellSize + cellSize;
+        const endY = i * cellSize + cellSize;
+
+        if (
+          clickX >= startX &&
+          clickY >= startY &&
+          clickX <= endX &&
+          clickY <= endY
+        ) {
+          index = i * 3 + j;
+          break;
+        }
+      }
+    }
+    return index;
+  }
+
   function getPositionByIndex(index, offsetX = 0, offsetY = 0) {
     const size = canvas.width;
     const cellSize = size / 3;
@@ -260,7 +284,14 @@ const boardDisplay = (function boardDisplay() {
     drawBoardLines();
   }
 
-  return { resetCanvas, drawBoard, getCanvas, setUpCanvas, drawWinningLine };
+  return {
+    resetCanvas,
+    drawBoard,
+    getCanvas,
+    setUpCanvas,
+    drawWinningLine,
+    getBoardCellIndex,
+  };
 })(document);
 
 const displayController = (function displayController(document, window) {
@@ -333,30 +364,6 @@ const gameController = (function gameController(
     [2, 4, 6],
   ];
 
-  function getBoardCellIndex({ x: clickX, y: clickY }) {
-    const cellSize = boardDisplay.getCanvas().width / 3;
-    let index = 0;
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 3; j++) {
-        const startX = j * cellSize;
-        const startY = i * cellSize;
-        const endX = j * cellSize + cellSize;
-        const endY = i * cellSize + cellSize;
-
-        if (
-          clickX >= startX &&
-          clickY >= startY &&
-          clickX <= endX &&
-          clickY <= endY
-        ) {
-          index = i * 3 + j;
-          break;
-        }
-      }
-    }
-    return index;
-  }
-
   function playMove(index, symbol) {
     gameBoard.playMove(index, symbol);
     winCombinations = gameBoard.getWinIndex(winConditions, symbol);
@@ -368,7 +375,7 @@ const gameController = (function gameController(
       x: e.offsetX,
       y: e.offsetY,
     };
-    const cellIndex = getBoardCellIndex(clickPosition);
+    const cellIndex = boardDisplay.getBoardCellIndex(clickPosition);
     if (gameBoard.positionOccupied(cellIndex)) return;
     if (playerOneTurn) {
       playMove(cellIndex, playerOne.getSymbol());
