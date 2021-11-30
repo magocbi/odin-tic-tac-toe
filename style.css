@@ -55,10 +55,6 @@ header {
     'computer-controls computer-controls';
 }
 
-.game > * {
-  /* border: 2px solid hsl(var(--clr-board)); */
-}
-
 .game-controls {
   grid-area: game-controls;
 }
@@ -195,6 +191,7 @@ header {
 }
 
 .gameboard-container canvas {
+  cursor: pointer;
   display: block;
   width: 100%;
   height: 100%;
