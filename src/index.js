@@ -56,9 +56,17 @@ const displayController = (function displayController() {
 
   const BOARD_COLOR = '#d1c05e';
   const BOARD_LINES_COLOR = '#000000';
+  const X_COLOR = '#a36e05';
+  const O_COLOR = '#7a3f00';
+  const WINNING_LINE_COLOR = '#001724';
+
+  let winningLineDrawn = false;
 
   function drawX(startPosition, distance, size) {
     const offset = size * distance;
+    ctx.lineCap = 'round';
+    ctx.lineWidth = canvas.width * 0.03;
+    ctx.strokeStyle = X_COLOR;
     ctx.beginPath();
     ctx.moveTo(startPosition.x + offset, startPosition.y + offset);
     ctx.lineTo(
@@ -71,6 +79,8 @@ const displayController = (function displayController() {
   }
 
   function drawO(centerPosition, distance, size) {
+    ctx.lineWidth = canvas.width * 0.03;
+    ctx.strokeStyle = O_COLOR;
     ctx.beginPath();
     ctx.arc(
       centerPosition.x,
@@ -118,6 +128,7 @@ const displayController = (function displayController() {
     ctx.fillStyle = BOARD_COLOR;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawBoardLines();
+    winningLineDrawn = false;
   }
 
   function drawBoard(gameBoard) {
@@ -156,15 +167,101 @@ const displayController = (function displayController() {
     return canvas;
   }
 
+  function getPositionByIndex(index, offsetX = 0, offsetY = 0) {
+    const size = canvas.width;
+    const cellSize = size / 3;
+    // get correct row by flooring
+    const y = Math.floor(index / 3) * cellSize + offsetY;
+    // get correct column by module
+    const x = (index % 3) * cellSize + offsetX;
+
+    return { x, y };
+  }
+
+  function getDistanceBetweenPoints(
+    { x: startX, y: startY },
+    { x: endX, y: endY }
+  ) {
+    const distance = {
+      x: Math.abs(endX - startX),
+      y: Math.abs(endY - startY),
+    };
+    return distance;
+  }
+
+  function drawWinningLine(winningCombinations) {
+    const size = canvas.width;
+    const cellSize = size / 3;
+    const winning = winningCombinations[0].map((index) => {
+      const centeredPosition = getPositionByIndex(
+        index,
+        cellSize / 2,
+        cellSize / 2
+      );
+      return centeredPosition;
+    });
+    const startPosition = winning[0];
+    const endPosition = winning[2];
+    const distance = getDistanceBetweenPoints(startPosition, endPosition);
+    const delta = {
+      x: endPosition.x - startPosition.x,
+      y: endPosition.y - startPosition.y,
+    };
+    let animationEnd = false;
+    let animateId;
+    let currentPosition = startPosition;
+    function animate() {
+      let nextPosition = {
+        x: currentPosition.x + delta.x / 20,
+        y: currentPosition.y + delta.y / 20,
+      };
+      const currentDistance = getDistanceBetweenPoints(
+        startPosition,
+        nextPosition
+      );
+      if (currentDistance.x >= distance.x && currentDistance.y >= distance.y) {
+        winningLineDrawn = true;
+        animationEnd = true;
+        nextPosition = endPosition;
+      }
+      ctx.lineCap = 'round';
+      ctx.lineWidth = size * 0.05;
+      ctx.strokeStyle = WINNING_LINE_COLOR;
+      ctx.beginPath();
+      ctx.moveTo(currentPosition.x, currentPosition.y);
+      ctx.lineTo(nextPosition.x, nextPosition.y);
+      ctx.stroke();
+
+      if (animationEnd) {
+        cancelAnimationFrame(animateId);
+        return;
+      }
+      currentPosition = nextPosition;
+      animateId = requestAnimationFrame(animate);
+    }
+    if (winningLineDrawn) {
+      ctx.lineWidth = size * 0.05;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = WINNING_LINE_COLOR;
+      ctx.beginPath();
+      ctx.moveTo(startPosition.x, startPosition.y);
+      ctx.lineTo(endPosition.x, endPosition.y);
+      ctx.stroke();
+    } else {
+      animate();
+    }
+  }
+
   function setUpCanvas() {
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = BOARD_COLOR;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawBoardLines();
   }
 
-  return { resetCanvas, drawBoard, getCanvas, setUpCanvas };
+  return { resetCanvas, drawBoard, getCanvas, setUpCanvas, drawWinningLine };
 })(document);
 
 const gameController = (function gameController(gameBoard, display, Player) {
@@ -172,6 +269,7 @@ const gameController = (function gameController(gameBoard, display, Player) {
   let playerTwo;
   let playerOneTurn = true;
   let gameOver = false;
+  let winCombinations = [];
   const playerOneInput = document.getElementById('player-one');
   const playerTwoInput = document.getElementById('player-two');
   const restartBtn = document.getElementById('restart-btn');
@@ -222,7 +320,6 @@ const gameController = (function gameController(gameBoard, display, Player) {
     };
     const cellIndex = getBoardCellIndex(clickPosition);
     if (gameBoard.positionOccupied(cellIndex)) return;
-    let winCombinations = [];
     if (playerOneTurn) {
       gameBoard.playMove(cellIndex, playerOne.getSymbol());
       winCombinations = gameBoard.getWinIndex(
@@ -238,6 +335,8 @@ const gameController = (function gameController(gameBoard, display, Player) {
       );
       gameInfo.textContent = `${playerOne.getName()} Turn`;
     }
+    display.drawBoard(gameBoard.getBoardState());
+
     if (winCombinations.length || gameBoard.gameTie()) {
       gameOver = true;
       if (winCombinations.length) {
@@ -246,18 +345,16 @@ const gameController = (function gameController(gameBoard, display, Player) {
             ? `${playerOne.getName()} has won!`
             : `${playerTwo.getName()} has won!`
         }`;
+        display.drawWinningLine(winCombinations);
       } else {
         gameInfo.textContent = 'Game is tied!';
       }
     }
 
     playerOneTurn = !playerOneTurn;
-
-    display.drawBoard(gameBoard.getBoardState());
   }
 
   function setUpNewGame() {
-    console.log('Setting up new game');
     gameBoard.resetBoard();
     display.resetCanvas();
     display.drawBoard(gameBoard.getBoardState());
@@ -274,6 +371,9 @@ const gameController = (function gameController(gameBoard, display, Player) {
   function resizeCanvas() {
     display.setUpCanvas();
     display.drawBoard(gameBoard.getBoardState());
+    if (gameOver) {
+      display.drawWinningLine(winCombinations);
+    }
   }
 
   function setUpListeners() {
