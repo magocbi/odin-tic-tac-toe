@@ -334,6 +334,8 @@ const gameController = (function gameController(gameBoard, display, Player) {
       );
       gameInfo.textContent = `${playerOne.getName()} Turn`;
     }
+    playerOneInput.value = playerOne.getName();
+    playerTwoInput.value = playerTwo.getName();
     display.drawBoard(gameBoard.getBoardState());
 
     if (winCombinations.length || gameBoard.gameTie()) {
@@ -365,6 +367,8 @@ const gameController = (function gameController(gameBoard, display, Player) {
     playerOneTurn = true;
     gameOver = false;
     gameInfo.textContent = `${playerOne.getName()} Turn`;
+    playerOneInput.value = playerOne.getName();
+    playerTwoInput.value = playerTwo.getName();
   }
 
   function resizeCanvas() {
