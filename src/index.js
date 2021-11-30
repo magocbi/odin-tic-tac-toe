@@ -7,7 +7,12 @@ function Player(name, symbol) {
     return symbol;
   }
 
-  return { getName, getSymbol };
+  function setName(newName) {
+    name = newName;
+    console.log(name);
+  }
+
+  return { getName, getSymbol, setName };
 }
 
 const GameBoard = (function gameBoard() {
@@ -287,8 +292,7 @@ const gameController = (function gameController(gameBoard, display, Player) {
     [2, 4, 6],
   ];
 
-  function getBoardCellIndex(clickPosition) {
-    const { x: clickX, y: clickY } = clickPosition;
+  function getBoardCellIndex({ x: clickX, y: clickY }) {
     const cellSize = display.getCanvas().width / 3;
     let index = 0;
     for (let i = 0; i < 3; i++) {
@@ -376,12 +380,27 @@ const gameController = (function gameController(gameBoard, display, Player) {
     }
   }
 
+  function onNameInputHandler(e) {
+    const input = e.target;
+    if (!input) return;
+    let name = input.value;
+    if (input === playerOneInput) {
+      name = name || 'Player 1';
+      playerOne.setName(name);
+    } else {
+      name = name || 'Player 2';
+      playerTwo.setName(name);
+    }
+  }
+
   function setUpListeners() {
     display.getCanvas().removeEventListener('click', handleBoardClick);
     display.getCanvas().addEventListener('click', handleBoardClick);
     window.removeEventListener('resize', resizeCanvas);
     window.addEventListener('resize', resizeCanvas);
     restartBtn.onclick = setUpNewGame;
+    playerOneInput.addEventListener('input', onNameInputHandler);
+    playerTwoInput.addEventListener('input', onNameInputHandler);
   }
 
   return { setUpNewGame, setUpListeners };
