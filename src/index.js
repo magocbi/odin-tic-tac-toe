@@ -50,8 +50,8 @@ const GameBoard = (function gameBoard() {
 
 const displayController = (function displayController() {
   const canvas = document.getElementById('gameboard');
-  canvas.width = canvas.parentElement.clientWidth;
-  canvas.height = canvas.parentElement.clientHeight;
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
   const ctx = canvas.getContext('2d');
 
   const BOARD_COLOR = '#d1c05e';
