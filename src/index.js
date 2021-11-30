@@ -357,6 +357,11 @@ const gameController = (function gameController(
     return index;
   }
 
+  function playMove(index, symbol) {
+    gameBoard.playMove(index, symbol);
+    winCombinations = gameBoard.getWinIndex(winConditions, symbol);
+  }
+
   function handleBoardClick(e) {
     if (gameOver) return;
     const clickPosition = {
@@ -366,20 +371,13 @@ const gameController = (function gameController(
     const cellIndex = getBoardCellIndex(clickPosition);
     if (gameBoard.positionOccupied(cellIndex)) return;
     if (playerOneTurn) {
-      gameBoard.playMove(cellIndex, playerOne.getSymbol());
-      winCombinations = gameBoard.getWinIndex(
-        winConditions,
-        playerOne.getSymbol()
-      );
+      playMove(cellIndex, playerOne.getSymbol());
       displayController.updateGameInfo('turn', playerTwo.getName());
     } else {
-      gameBoard.playMove(cellIndex, playerTwo.getSymbol());
-      winCombinations = gameBoard.getWinIndex(
-        winConditions,
-        playerTwo.getSymbol()
-      );
+      playMove(cellIndex, playerTwo.getSymbol());
       displayController.updateGameInfo('turn', playerOne.getName());
     }
+    // in case input field was left empty
     displayController.updatePlayerInputs(
       playerOne.getName(),
       playerTwo.getName()
