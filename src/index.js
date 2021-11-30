@@ -9,7 +9,6 @@ function Player(name, symbol) {
 
   function setName(newName) {
     name = newName;
-    console.log(name);
   }
 
   return { getName, getSymbol, setName };
@@ -53,7 +52,7 @@ const GameBoard = (function gameBoard() {
   };
 })();
 
-const displayController = (function displayController() {
+const boardDisplay = (function boardDisplay() {
   const canvas = document.getElementById('gameboard');
   const ctx = canvas.getContext('2d');
 
@@ -264,16 +263,63 @@ const displayController = (function displayController() {
   return { resetCanvas, drawBoard, getCanvas, setUpCanvas, drawWinningLine };
 })(document);
 
-const gameController = (function gameController(gameBoard, display, Player) {
+const displayController = (function displayController(document, window) {
+  const playerOneInput = document.getElementById('player-one');
+  const playerTwoInput = document.getElementById('player-two');
+  const restartBtn = document.getElementById('restart-btn');
+  const gameInfo = document.querySelector('.info-display h2');
+
+  function updatePlayerInputs(playerOneName, playerTwoName) {
+    playerOneInput.value = playerOneName;
+    playerTwoInput.value = playerTwoName;
+  }
+
+  function updateGameInfo(action, playerName) {
+    switch (action) {
+      case 'turn':
+        gameInfo.textContent = `${playerName} turn to play!`;
+        break;
+      case 'tie':
+        gameInfo.textContent = 'Game is tied!';
+        break;
+      case 'won':
+        gameInfo.textContent = `${playerName} has won the game`;
+    }
+  }
+
+  function onRestart(callback) {
+    restartBtn.addEventListener('click', callback);
+  }
+
+  function onNameChange(callback) {
+    playerOneInput.addEventListener('input', callback);
+    playerTwoInput.addEventListener('input', callback);
+  }
+
+  function onWindowResize(callback) {
+    window.addEventListener('resize', callback);
+  }
+
+  return {
+    onRestart,
+    onNameChange,
+    onWindowResize,
+    updateGameInfo,
+    updatePlayerInputs,
+  };
+})(document, window);
+
+const gameController = (function gameController(
+  gameBoard,
+  boardDisplay,
+  displayController,
+  Player
+) {
   let playerOne;
   let playerTwo;
   let playerOneTurn = true;
   let gameOver = false;
   let winCombinations = [];
-  const playerOneInput = document.getElementById('player-one');
-  const playerTwoInput = document.getElementById('player-two');
-  const restartBtn = document.getElementById('restart-btn');
-  const gameInfo = document.querySelector('.info-display h2');
   const winConditions = [
     [0, 1, 2],
     [3, 4, 5],
@@ -288,7 +334,7 @@ const gameController = (function gameController(gameBoard, display, Player) {
   ];
 
   function getBoardCellIndex({ x: clickX, y: clickY }) {
-    const cellSize = display.getCanvas().width / 3;
+    const cellSize = boardDisplay.getCanvas().width / 3;
     let index = 0;
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
@@ -325,30 +371,31 @@ const gameController = (function gameController(gameBoard, display, Player) {
         winConditions,
         playerOne.getSymbol()
       );
-      gameInfo.textContent = `${playerTwo.getName()} Turn`;
+      displayController.updateGameInfo('turn', playerTwo.getName());
     } else {
       gameBoard.playMove(cellIndex, playerTwo.getSymbol());
       winCombinations = gameBoard.getWinIndex(
         winConditions,
         playerTwo.getSymbol()
       );
-      gameInfo.textContent = `${playerOne.getName()} Turn`;
+      displayController.updateGameInfo('turn', playerOne.getName());
     }
-    playerOneInput.value = playerOne.getName();
-    playerTwoInput.value = playerTwo.getName();
-    display.drawBoard(gameBoard.getBoardState());
+    displayController.updatePlayerInputs(
+      playerOne.getName(),
+      playerTwo.getName()
+    );
+    boardDisplay.drawBoard(gameBoard.getBoardState());
 
     if (winCombinations.length || gameBoard.gameTie()) {
       gameOver = true;
       if (winCombinations.length) {
-        gameInfo.textContent = `${
-          playerOneTurn
-            ? `${playerOne.getName()} has won!`
-            : `${playerTwo.getName()} has won!`
-        }`;
-        display.drawWinningLine(winCombinations);
+        let winningPlayer = playerOneTurn
+          ? playerOne.getName()
+          : playerTwo.getName();
+        displayController.updateGameInfo('won', winningPlayer);
+        boardDisplay.drawWinningLine(winCombinations);
       } else {
-        gameInfo.textContent = 'Game is tied!';
+        displayController.updateGameInfo('tie', null);
       }
     }
 
@@ -357,25 +404,24 @@ const gameController = (function gameController(gameBoard, display, Player) {
 
   function setUpNewGame() {
     gameBoard.resetBoard();
-    display.resetCanvas();
-    display.drawBoard(gameBoard.getBoardState());
+    boardDisplay.resetCanvas();
+    boardDisplay.drawBoard(gameBoard.getBoardState());
 
-    const playerOneName = playerOneInput.value || 'Player 1';
-    const playerTwoName = playerTwoInput.value || 'Player 2';
+    const playerOneName = playerOne?.getName() || 'Player 1';
+    const playerTwoName = playerTwo?.getName() || 'Player 2';
     playerOne = Player(playerOneName, 'x');
     playerTwo = Player(playerTwoName, 'o');
     playerOneTurn = true;
     gameOver = false;
-    gameInfo.textContent = `${playerOne.getName()} Turn`;
-    playerOneInput.value = playerOne.getName();
-    playerTwoInput.value = playerTwo.getName();
+    displayController.updateGameInfo('turn', playerOneName);
+    displayController.updateGameInfo(playerOneName, playerTwoName);
   }
 
   function resizeCanvas() {
-    display.setUpCanvas();
-    display.drawBoard(gameBoard.getBoardState());
+    boardDisplay.setUpCanvas();
+    boardDisplay.drawBoard(gameBoard.getBoardState());
     if (gameOver) {
-      display.drawWinningLine(winCombinations);
+      boardDisplay.drawWinningLine(winCombinations);
     }
   }
 
@@ -383,7 +429,7 @@ const gameController = (function gameController(gameBoard, display, Player) {
     const input = e.target;
     if (!input) return;
     let name = input.value;
-    if (input === playerOneInput) {
+    if (input.id === 'player-one') {
       name = name || 'Player 1';
       playerOne.setName(name);
     } else {
@@ -393,17 +439,14 @@ const gameController = (function gameController(gameBoard, display, Player) {
   }
 
   function setUpListeners() {
-    display.getCanvas().removeEventListener('click', handleBoardClick);
-    display.getCanvas().addEventListener('click', handleBoardClick);
-    window.removeEventListener('resize', resizeCanvas);
-    window.addEventListener('resize', resizeCanvas);
-    restartBtn.onclick = setUpNewGame;
-    playerOneInput.addEventListener('input', onNameInputHandler);
-    playerTwoInput.addEventListener('input', onNameInputHandler);
+    boardDisplay.getCanvas().addEventListener('click', handleBoardClick);
+    displayController.onRestart(setUpNewGame);
+    displayController.onNameChange(onNameInputHandler);
+    displayController.onWindowResize(resizeCanvas);
   }
 
   return { setUpNewGame, setUpListeners };
-})(GameBoard, displayController, Player);
+})(GameBoard, boardDisplay, displayController, Player);
 
 gameController.setUpListeners();
 gameController.setUpNewGame();
