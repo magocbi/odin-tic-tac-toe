@@ -55,8 +55,6 @@ const GameBoard = (function gameBoard() {
 
 const displayController = (function displayController() {
   const canvas = document.getElementById('gameboard');
-  canvas.width = canvas.clientWidth;
-  canvas.height = canvas.clientHeight;
   const ctx = canvas.getContext('2d');
 
   const BOARD_COLOR = '#d1c05e';
@@ -130,15 +128,12 @@ const displayController = (function displayController() {
   }
 
   function resetCanvas() {
-    ctx.fillStyle = BOARD_COLOR;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    drawBoardLines();
+    setUpCanvas();
     winningLineDrawn = false;
   }
 
   function drawBoard(gameBoard) {
     const size = canvas.width;
-    const lineWidth = size * 0.03;
     const cellSize = size / 3;
     const offset = size * 0.05;
     for (let i = 0; i < 3; i += 1) {
