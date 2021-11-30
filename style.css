@@ -103,12 +103,21 @@ header {
   color: hsl(var(--clr-player-two));
 }
 
+.player1-meta input:hover {
+  cursor: pointer;
+}
+.player2-meta input:hover {
+  cursor: pointer;
+}
+
 .player1-meta input:focus {
+  cursor: text;
   color: #000;
   background-color: hsl(var(--clr-player-one));
 }
 
 .player2-meta input:focus {
+  cursor: text;
   color: #000;
   background-color: hsl(var(--clr-player-two));
 }
@@ -123,14 +132,19 @@ header {
 }
 
 .restart-btn {
+  cursor: pointer;
   font-size: 1.3rem;
   letter-spacing: 0.1em;
   color: #fff;
   background-color: red;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: 5px;
   padding: 0.25em 0.75em;
   margin: 0 auto;
+}
+
+.restart-btn:hover {
+  border: 1px solid hsl(var(--clr-board));
 }
 
 .player-btns {
@@ -140,9 +154,14 @@ header {
 }
 
 .player-btns button {
+  cursor: pointer;
   font-size: 1.2rem;
   padding: 0.25em 0.75em;
   border: 0;
+}
+
+.player-btns button:hover {
+  opacity: 0.8;
 }
 
 .player-btn {
