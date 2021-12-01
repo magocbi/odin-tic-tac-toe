@@ -299,6 +299,8 @@ const displayController = (function displayController(document, window) {
   const playerTwoInput = document.getElementById('player-two');
   const restartBtn = document.getElementById('restart-btn');
   const gameInfo = document.querySelector('.info-display h2');
+  const playerBtn = document.getElementById('player-btn');
+  const computerBtn = document.getElementById('computer-btn');
 
   function updatePlayerInputs(playerOneName, playerTwoName) {
     playerOneInput.value = playerOneName;
@@ -331,12 +333,24 @@ const displayController = (function displayController(document, window) {
     window.addEventListener('resize', callback);
   }
 
+  function onPlayerToggle(callback) {
+    computerBtn.addEventListener('click', callback);
+    playerBtn.addEventListener('click', callback);
+  }
+
+  function updatePlayerToggle(computerPlay) {
+    computerBtn.classList.toggle('selected');
+    playerBtn.classList.toggle('selected');
+  }
+
   return {
     onRestart,
     onNameChange,
     onWindowResize,
+    onPlayerToggle,
     updateGameInfo,
     updatePlayerInputs,
+    updatePlayerToggle,
   };
 })(document, window);
 
@@ -350,6 +364,7 @@ const gameController = (function gameController(
   let playerTwo;
   let playerOneTurn = true;
   let gameOver = false;
+  let computerPlay = false;
   let winCombinations = [];
   const winConditions = [
     [0, 1, 2],
@@ -364,9 +379,50 @@ const gameController = (function gameController(
     [2, 4, 6],
   ];
 
+  function displayGameResults() {
+    if (winCombinations.length) {
+      let winningPlayer = playerOneTurn
+        ? playerOne.getName()
+        : playerTwo.getName();
+      displayController.updateGameInfo('won', winningPlayer);
+      boardDisplay.drawWinningLine(winCombinations);
+    } else {
+      displayController.updateGameInfo('tie', null);
+    }
+  }
+
+  function checkGameOver() {
+    if (winCombinations.length || gameBoard.gameTie()) {
+      gameOver = true;
+    }
+  }
+
   function playMove(index, symbol) {
     gameBoard.playMove(index, symbol);
     winCombinations = gameBoard.getWinIndex(winConditions, symbol);
+    boardDisplay.drawBoard(gameBoard.getBoardState());
+  }
+
+  function getComputerMoveIndex() {
+    const currentBoard = gameBoard.getBoardState();
+    const availableMoves = currentBoard
+      .map((cell, index) => ({ index, symbol: cell }))
+      .filter((cell) => cell.symbol === null);
+    const randomChoice = Math.floor(Math.random() * availableMoves.length);
+    return availableMoves[randomChoice].index;
+  }
+
+  function passTurn() {
+    if (computerPlay && !gameOver) {
+      const moveIndex = getComputerMoveIndex();
+      playMove(moveIndex, playerTwo.getSymbol());
+      displayController.updateGameInfo('turn', playerOne.getName());
+      checkGameOver();
+    } else if (gameOver) {
+      displayGameResults();
+    } else {
+      playerOneTurn = !playerOneTurn;
+    }
   }
 
   function handleBoardClick(e) {
@@ -389,22 +445,10 @@ const gameController = (function gameController(
       playerOne.getName(),
       playerTwo.getName()
     );
-    boardDisplay.drawBoard(gameBoard.getBoardState());
 
-    if (winCombinations.length || gameBoard.gameTie()) {
-      gameOver = true;
-      if (winCombinations.length) {
-        let winningPlayer = playerOneTurn
-          ? playerOne.getName()
-          : playerTwo.getName();
-        displayController.updateGameInfo('won', winningPlayer);
-        boardDisplay.drawWinningLine(winCombinations);
-      } else {
-        displayController.updateGameInfo('tie', null);
-      }
-    }
+    checkGameOver();
 
-    playerOneTurn = !playerOneTurn;
+    passTurn();
   }
 
   function setUpNewGame() {
@@ -443,11 +487,17 @@ const gameController = (function gameController(
     }
   }
 
+  function toggleComputer() {
+    computerPlay = !computerPlay;
+    displayController.updatePlayerToggle(computerPlay);
+  }
+
   function setUpListeners() {
     boardDisplay.getCanvas().addEventListener('click', handleBoardClick);
     displayController.onRestart(setUpNewGame);
     displayController.onNameChange(onNameInputHandler);
     displayController.onWindowResize(resizeCanvas);
+    displayController.onPlayerToggle(toggleComputer);
   }
 
   return { setUpNewGame, setUpListeners };
