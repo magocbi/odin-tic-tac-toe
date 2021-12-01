@@ -408,7 +408,7 @@ const gameController = (function gameController(
     }
   }
 
-  function getWinIndex(winConditions, symbol,board) {
+  function getWinIndex(winConditions, symbol, board) {
     return winConditions.filter((combination) =>
       combination.every((index) => board[index] === symbol)
     );
@@ -427,33 +427,35 @@ const gameController = (function gameController(
     winCombinations = gameBoard.getWinIndex(winConditions, symbol);
     boardDisplay.drawBoard(gameBoard.getBoardState());
   }
-  
+
   function getMiniMaxComputerIndex(currentBoard, depth, computer) {
     const playerOneSymbol = playerOne.getSymbol();
     const playerTwoSymbol = playerTwo.getSymbol();
 
-    if (getWinIndex(winConditions,playerTwoSymbol,currentBoard).length) return 1;
-    if (getWinIndex(winConditions,playerOneSymbol,currentBoard).length) return -1;    
-    if (depth === 0 || currentBoard.every(cell => cell!==null)) return 0;
-    
+    if (getWinIndex(winConditions, playerTwoSymbol, currentBoard).length)
+      return 1;
+    if (getWinIndex(winConditions, playerOneSymbol, currentBoard).length)
+      return -1;
+    if (depth === 0 || currentBoard.every((cell) => cell !== null)) return 0;
+
     if (computer) {
       let maxEval = -Infinity;
       const availableMoves = getAvailableMoves(currentBoard);
-      availableMoves.forEach(({index}) => {
+      availableMoves.forEach(({ index }) => {
         const newBoard = currentBoard.slice();
-        newBoard[index]= playerTwoSymbol;
-        let eval = getMiniMaxComputerIndex(newBoard,depth-1,false);
-        maxEval = Math.max(maxEval,eval);
+        newBoard[index] = playerTwoSymbol;
+        let result = getMiniMaxComputerIndex(newBoard, depth - 1, false);
+        maxEval = Math.max(maxEval, result);
       });
       return maxEval;
-    }else{
-      let minEval  = Infinity;
+    } else {
+      let minEval = Infinity;
       const availableMoves = getAvailableMoves(currentBoard);
-      availableMoves.forEach(({index}) => {
+      availableMoves.forEach(({ index }) => {
         const newBoard = currentBoard.slice();
-        newBoard[index]= playerOneSymbol;
-        let eval = getMiniMaxComputerIndex(newBoard,depth-1,true);
-        minEval = Math.min(minEval,eval);
+        newBoard[index] = playerOneSymbol;
+        let result = getMiniMaxComputerIndex(newBoard, depth - 1, true);
+        minEval = Math.min(minEval, result);
       });
       return minEval;
     }
@@ -461,26 +463,24 @@ const gameController = (function gameController(
 
   function getComputerMoveIndex(depth) {
     const availableMoves = gameBoard.getAvailableMoves();
-    if(depth  ===0){
+    if (depth === 0) {
       const randomChoice = Math.floor(Math.random() * availableMoves.length);
       return availableMoves[randomChoice].index;
     }
     let bestMove;
-    let eval = -Infinity;
-    availableMoves.forEach(({index}) =>{
+    let result = -Infinity;
+    availableMoves.forEach(({ index }) => {
       const newBoard = gameBoard.getBoardState();
       newBoard[index] = playerTwo.getSymbol();
-      let currentEval = getMiniMaxComputerIndex(newBoard,depth,false);
-      if(eval<currentEval) {
+      let currentEval = getMiniMaxComputerIndex(newBoard, depth, false);
+      if (result < currentEval) {
         bestMove = index;
-        eval = currentEval;
+        result = currentEval;
       }
-    })
+    });
     console.log(eval);
     return bestMove;
-    
   }
-
 
   function passTurn() {
     if (computerPlay && !gameOver) {
@@ -490,15 +490,11 @@ const gameController = (function gameController(
       displayController.updateGameInfo('turn', playerOne.getName());
       checkGameOver();
     }
-    
-    
-    
+
     if (gameOver) {
       displayGameResults();
-    } 
+    }
     playerOneTurn = !playerOneTurn;
-      
-    
   }
 
   function handleBoardClick(e) {
@@ -566,6 +562,15 @@ const gameController = (function gameController(
   function toggleComputer() {
     computerPlay = !computerPlay;
     displayController.updatePlayerToggle(computerPlay);
+    if (computerPlay) {
+      playerTwo.setName('Computer');
+    } else {
+      playerTwo.setName('Player 2');
+    }
+    displayController.updatePlayerInputs(
+      playerOne.getName(),
+      playerTwo.getName()
+    );
   }
 
   function setUpListeners() {
