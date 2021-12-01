@@ -25,7 +25,9 @@ const GameBoard = (function gameBoard() {
   }
 
   function playMove(index, symbol) {
-    board[index] = symbol;
+    const newBoard = board.slice();
+    newBoard[index] = symbol;
+    board = newBoard;
   }
 
   function gameTie() {
@@ -42,6 +44,14 @@ const GameBoard = (function gameBoard() {
     return board[index];
   }
 
+  function getAvailableMoves() {
+    const availableMoves = board
+      .slice()
+      .map((cell, index) => ({ index, symbol: cell }))
+      .filter((cell) => cell.symbol === null);
+    return availableMoves;
+  }
+
   return {
     getBoardState,
     resetBoard,
@@ -49,6 +59,7 @@ const GameBoard = (function gameBoard() {
     getWinIndex,
     gameTie,
     positionOccupied,
+    getAvailableMoves,
   };
 })();
 
@@ -397,32 +408,97 @@ const gameController = (function gameController(
     }
   }
 
+  function getWinIndex(winConditions, symbol,board) {
+    return winConditions.filter((combination) =>
+      combination.every((index) => board[index] === symbol)
+    );
+  }
+
+  function getAvailableMoves(board) {
+    const availableMoves = board
+      .slice()
+      .map((cell, index) => ({ index, symbol: cell }))
+      .filter((cell) => cell.symbol === null);
+    return availableMoves;
+  }
+
   function playMove(index, symbol) {
     gameBoard.playMove(index, symbol);
     winCombinations = gameBoard.getWinIndex(winConditions, symbol);
     boardDisplay.drawBoard(gameBoard.getBoardState());
   }
+  
+  function getMiniMaxComputerIndex(currentBoard, depth, computer) {
+    const playerOneSymbol = playerOne.getSymbol();
+    const playerTwoSymbol = playerTwo.getSymbol();
 
-  function getComputerMoveIndex() {
-    const currentBoard = gameBoard.getBoardState();
-    const availableMoves = currentBoard
-      .map((cell, index) => ({ index, symbol: cell }))
-      .filter((cell) => cell.symbol === null);
-    const randomChoice = Math.floor(Math.random() * availableMoves.length);
-    return availableMoves[randomChoice].index;
+    if (getWinIndex(winConditions,playerTwoSymbol,currentBoard).length) return 1;
+    if (getWinIndex(winConditions,playerOneSymbol,currentBoard).length) return -1;    
+    if (depth === 0 || currentBoard.every(cell => cell!==null)) return 0;
+    
+    if (computer) {
+      let maxEval = -Infinity;
+      const availableMoves = getAvailableMoves(currentBoard);
+      availableMoves.forEach(({index}) => {
+        const newBoard = currentBoard.slice();
+        newBoard[index]= playerTwoSymbol;
+        let eval = getMiniMaxComputerIndex(newBoard,depth-1,false);
+        maxEval = Math.max(maxEval,eval);
+      });
+      return maxEval;
+    }else{
+      let minEval  = Infinity;
+      const availableMoves = getAvailableMoves(currentBoard);
+      availableMoves.forEach(({index}) => {
+        const newBoard = currentBoard.slice();
+        newBoard[index]= playerOneSymbol;
+        let eval = getMiniMaxComputerIndex(newBoard,depth-1,true);
+        minEval = Math.min(minEval,eval);
+      });
+      return minEval;
+    }
   }
+
+  function getComputerMoveIndex(depth) {
+    const availableMoves = gameBoard.getAvailableMoves();
+    if(depth  ===0){
+      const randomChoice = Math.floor(Math.random() * availableMoves.length);
+      return availableMoves[randomChoice].index;
+    }
+    let bestMove;
+    let eval = -Infinity;
+    availableMoves.forEach(({index}) =>{
+      const newBoard = gameBoard.getBoardState();
+      newBoard[index] = playerTwo.getSymbol();
+      let currentEval = getMiniMaxComputerIndex(newBoard,depth,false);
+      if(eval<currentEval) {
+        bestMove = index;
+        eval = currentEval;
+      }
+    })
+    console.log(eval);
+    return bestMove;
+    
+  }
+
 
   function passTurn() {
     if (computerPlay && !gameOver) {
-      const moveIndex = getComputerMoveIndex();
+      playerOneTurn = !playerOneTurn;
+      const moveIndex = getComputerMoveIndex(2);
       playMove(moveIndex, playerTwo.getSymbol());
       displayController.updateGameInfo('turn', playerOne.getName());
       checkGameOver();
-    } else if (gameOver) {
-      displayGameResults();
-    } else {
-      playerOneTurn = !playerOneTurn;
     }
+    
+    
+    
+    if (gameOver) {
+      displayGameResults();
+    } 
+    playerOneTurn = !playerOneTurn;
+      
+    
   }
 
   function handleBoardClick(e) {
