@@ -478,7 +478,6 @@ const gameController = (function gameController(
         result = currentEval;
       }
     });
-    console.log(eval);
     return bestMove;
   }
 
@@ -564,6 +563,10 @@ const gameController = (function gameController(
     displayController.updatePlayerToggle(computerPlay);
     if (computerPlay) {
       playerTwo.setName('Computer');
+      if (!playerOneTurn) {
+        playerOneTurn = !playerOneTurn;
+        passTurn();
+      }
     } else {
       playerTwo.setName('Player 2');
     }
