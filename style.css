@@ -50,9 +50,9 @@ header {
   grid-template-areas:
     'player1 player2'
     'game-controls game-controls'
+    'computer-controls computer-controls'
     'display-info display-info'
-    'gameboard gameboard'
-    'computer-controls computer-controls';
+    'gameboard gameboard';
 }
 
 .game-controls {
@@ -172,6 +172,34 @@ header {
   background-color: hsl(var(--clr-player-two));
   border: 1px solid hsl(var(--clr-player-one));
 }
+
+/* Computer controls */
+
+.computer-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.computer-controls h3 {
+  color: hsl(var(--clr-board));
+}
+
+.difficulty-btns button {
+  padding: 0.25em 0.75em;
+  border: 1px solid transparent;
+  border-radius: 2px;
+}
+
+.difficulty-btns button:hover,
+.difficulty-btns .selected {
+  color: hsl(var(--clr-board));
+  background-color: transparent;
+  opacity: 0.8;
+  border: 1px solid hsl(var(--clr-board));
+}
+
 /* display  info */
 
 .info-display {

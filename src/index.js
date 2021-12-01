@@ -313,6 +313,8 @@ const displayController = (function displayController(document, window) {
   const playerBtn = document.getElementById('player-btn');
   const computerBtn = document.getElementById('computer-btn');
 
+  const difficultyBtns = document.querySelectorAll('button[data-difficulty]');
+
   function updatePlayerInputs(playerOneName, playerTwoName) {
     playerOneInput.value = playerOneName;
     playerTwoInput.value = playerTwoName;
@@ -349,9 +351,23 @@ const displayController = (function displayController(document, window) {
     playerBtn.addEventListener('click', callback);
   }
 
-  function updatePlayerToggle(computerPlay) {
+  function onDifficultyChange(callback) {
+    difficultyBtns.forEach((button) => (button.onclick = callback));
+  }
+
+  function updatePlayerToggle() {
     computerBtn.classList.toggle('selected');
     playerBtn.classList.toggle('selected');
+  }
+
+  function selectDifficulty(difficulty) {
+    difficultyBtns.forEach((button) => {
+      if (button.dataset.difficulty === difficulty) {
+        button.classList.add('selected');
+      } else {
+        button.classList.remove('selected');
+      }
+    });
   }
 
   return {
@@ -359,9 +375,11 @@ const displayController = (function displayController(document, window) {
     onNameChange,
     onWindowResize,
     onPlayerToggle,
+    onDifficultyChange,
     updateGameInfo,
     updatePlayerInputs,
     updatePlayerToggle,
+    selectDifficulty,
   };
 })(document, window);
 
@@ -377,6 +395,12 @@ const gameController = (function gameController(
   let gameOver = false;
   let computerPlay = false;
   let winCombinations = [];
+  let selectedDifficulty = 'easy';
+  const difficultyLevels = {
+    easy: 0,
+    medium: 3,
+    hard: 5,
+  };
   const winConditions = [
     [0, 1, 2],
     [3, 4, 5],
@@ -484,7 +508,8 @@ const gameController = (function gameController(
   function passTurn() {
     if (computerPlay && !gameOver) {
       playerOneTurn = !playerOneTurn;
-      const moveIndex = getComputerMoveIndex(2);
+      const difficulty = difficultyLevels[selectedDifficulty];
+      const moveIndex = getComputerMoveIndex(difficulty);
       playMove(moveIndex, playerTwo.getSymbol());
       displayController.updateGameInfo('turn', playerOne.getName());
       checkGameOver();
@@ -576,12 +601,25 @@ const gameController = (function gameController(
     );
   }
 
+  function changeDifficultyHandler(e) {
+    const target = e.target;
+    const difficulty = target.dataset.difficulty;
+    if (difficulty) {
+      selectedDifficulty = difficulty;
+      displayController.selectDifficulty(difficulty);
+    } else {
+      selectedDifficulty = 'easy';
+      displayController.selectDifficulty('easy');
+    }
+  }
+
   function setUpListeners() {
     boardDisplay.getCanvas().addEventListener('click', handleBoardClick);
     displayController.onRestart(setUpNewGame);
     displayController.onNameChange(onNameInputHandler);
     displayController.onWindowResize(resizeCanvas);
     displayController.onPlayerToggle(toggleComputer);
+    displayController.onDifficultyChange(changeDifficultyHandler);
   }
 
   return { setUpNewGame, setUpListeners };
