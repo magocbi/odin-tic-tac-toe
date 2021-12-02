@@ -288,7 +288,7 @@ const boardDisplay = (function boardDisplay() {
 
   function setUpCanvas() {
     canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+    canvas.height = canvas.clientWidth;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = BOARD_COLOR;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
