@@ -625,5 +625,7 @@ const gameController = (function gameController(
   return { setUpNewGame, setUpListeners };
 })(GameBoard, boardDisplay, displayController, Player);
 
-gameController.setUpListeners();
-gameController.setUpNewGame();
+window.addEventListener('load', () => {
+  gameController.setUpListeners();
+  gameController.setUpNewGame();
+});
