@@ -14,16 +14,6 @@
   </header>
   <main  class="container">
     <section class="game">
-      <div class="game-controls">
-        <button id="restart-btn" class="restart-btn" type="button">Restart</button>
-        <div class="player-btns">
-          <button class="player-btn selected" type="button" id="player-btn">Player2</button>
-          <button class="computer-btn "type="button" id="computer-btn">Computer</button>
-        </div>
-      </div>
-      <div class="info-display">
-        <h2>Player 1 Turn</h2>
-      </div>
       <div class="player1-meta">
         <input type="text" placeholder="Player 1" value="Player 1" id="player-one"/>
       </div>
@@ -31,8 +21,12 @@
         <input type="text" placeholder="Player 2" value="Player 2" id="player-two"/>
         
       </div>
-      <div class="gameboard-container">
-        <canvas id="gameboard">not supported by browser</canvas>
+      <div class="game-controls">
+        <button id="restart-btn" class="restart-btn" type="button">Restart</button>
+        <div class="player-btns">
+          <button class="player-btn selected" type="button" id="player-btn">Player2</button>
+          <button class="computer-btn "type="button" id="computer-btn">Computer</button>
+        </div>
       </div>
       <div class="computer-controls">
         <h3>Difficulty level</h3>
@@ -42,6 +36,14 @@
           <button data-difficulty='hard'>Hard</button>
         </div>
       </div>
+      <div class="info-display">
+        <h2>Player 1 Turn</h2>
+      </div>
+      
+      <div class="gameboard-container">
+        <canvas id="gameboard">not supported by browser</canvas>
+      </div>
+      
     </section>
     
 
